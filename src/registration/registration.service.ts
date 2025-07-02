@@ -7,12 +7,19 @@ import { Prisma , User } from '@prisma/client';
 export class RegistrationService {
   constructor (private readonly prisma:PrismaService){}
 
-    async create(data: Prisma.UserCreateInput): Promise<User> {
-      console.log('added to bd',data)
-      if(typeof data.createdAt === "string"){
-        data.createdAt = new Date(data.createdAt)
+    async create(data: Prisma.UserCreateInput) {
+      let checkDuplicate = await this.prisma.user.findFirst({where: { email: data.email } });
+
+      if(checkDuplicate === null) {
+        if(typeof data.createdAt === "string"){
+          data.createdAt = new Date(data.createdAt)
+        }
+        console.log('added to bd',data)
+        return this.prisma.user.create({data});
       }
-      return this.prisma.user.create({data});
+      console.log('DUPLICATE')
+      return null;
+ 
   }
 
   findAll() {
@@ -20,7 +27,7 @@ export class RegistrationService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} registration`;
+    return this.prisma.user.findUnique({where:{id}});
   }
 
   update(id: number, updateRegistrationDto: UpdateRegistrationDto) {

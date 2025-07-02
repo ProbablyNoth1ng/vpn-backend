@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
-
+import { PrismaService } from 'prisma/prisma.service';
+import { Prisma , User } from '@prisma/client';
 @Injectable()
 export class RegistrationService {
-  create(createRegistrationDto: CreateRegistrationDto) {
-    return 'This action adds a new registration';
+  constructor (private readonly prisma:PrismaService){}
+
+    async create(data: Prisma.UserCreateInput): Promise<User> {
+      console.log('added to bd',data)
+      if(typeof data.createdAt === "string"){
+        data.createdAt = new Date(data.createdAt)
+      }
+      return this.prisma.user.create({data});
   }
 
   findAll() {
-    return `This action returns all registration`;
+    return this.prisma.user.findMany();
   }
 
   findOne(id: number) {

@@ -2,8 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { RegistrationService } from './registration.service';
 import { CreateRegistrationDto } from './dto/create-registration.dto';
 import { UpdateRegistrationDto } from './dto/update-registration.dto';
+import { Prisma } from '@prisma/client';
 
-@Controller('registration')
+@Controller('/registration')
 export class RegistrationController {
   constructor(private readonly registrationService: RegistrationService) {}
 

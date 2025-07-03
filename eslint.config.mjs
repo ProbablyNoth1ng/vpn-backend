@@ -1,34 +1,73 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
+const js = require('@eslint/js');
+const typescriptPlugin = require('@typescript-eslint/eslint-plugin');
+const typescriptParser = require('@typescript-eslint/parser');
+const prettierConfig = require('eslint-config-prettier');
+const { resolve } = require('path');
 
-export default tseslint.config(
+module.exports = [
+  js.configs.recommended,
+  prettierConfig,
+
   {
-    ignores: ['eslint.config.mjs'],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
-  {
+    ignores: ['dist', 'node_modules', '**/*.test.ts', '**/*.spec.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
+      parser: typescriptParser,
       parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
+        // eslint-disable-next-line no-undef
+        project: resolve(__dirname, './tsconfig.eslint.json'),
+        // eslint-disable-next-line no-undef
+        tsconfigRootDir: __dirname,
+        sourceType: 'module',
+        ignorePatterns: ['dist', '**/*.test.ts', '**/*.spec.ts'],
+      },
+      globals: {
+        Buffer: 'readonly',
+        process: 'readonly',
+        global: 'readonly',
+        module: 'readonly',
+        __dirname: 'readonly',
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
       },
     },
-  },
-  {
+    plugins: {
+      '@typescript-eslint': typescriptPlugin,
+      'simple-import-sort': require('eslint-plugin-simple-import-sort'),
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
+      'no-trailing-spaces': ['error', { ignoreComments: true }],
+      'no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^', varsIgnorePattern: '^' },
+      ],
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^', varsIgnorePattern: '^' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            ['^@?\\w'], // External libraries
+            ['^'], // Absolute imports
+            ['^@infrastructure(/.*|$)'],
+            ['^@usecases(/.*|$)'],
+            ['^@domain(/.*|$)'],
+            ['^@enums(/.*|$)'],
+            ['^@shared(/.*|$)'],
+            ['^\\.'], // Relative imports
+          ],
+        },
+      ],
+      'simple-import-sort/exports': 'error',
+      '@typescript-eslint/interface-name-prefix': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
   },
-);
+];

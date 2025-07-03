@@ -12,16 +12,18 @@ export class RegistrationService {
     private readonly verificationService: VerificationService,
   ) {}
 
-  async create(data: Prisma.UserCreateInput): Promise<User> {
+  async create(data: Prisma.UserCreateInput): Promise<User | null> {
     if (typeof data.createdAt === 'string') {
       data.createdAt = new Date(data.createdAt);
     }
 
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findFirst({
       where: { email: data.email },
     });
+
     if (existingUser) {
-      throw new Error('User with this email already exists');
+      console.log('DUPLICATE');
+      return null;
     }
 
     const verificationCode =
@@ -35,6 +37,7 @@ export class RegistrationService {
       },
     });
 
+    console.log('Added to DB:', user);
     console.log(`Verification code sent to ${user.email}: ${verificationCode}`);
 
     return user;

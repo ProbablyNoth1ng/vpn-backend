@@ -3,10 +3,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RegistrationModule } from './registration/registration.module';
 import { VpnConnectionModule } from './vpn-connection/vpn-connection.module';
-import { PrismaService } from '../prisma/prisma.service';
-
+import { LoginModule } from './login/login.module';
 @Module({
-  imports: [RegistrationModule, VpnConnectionModule],
+  imports: [RegistrationModule, LoginModule, VpnConnectionModule],
   controllers: [AppController],
   providers: [AppService],
 })

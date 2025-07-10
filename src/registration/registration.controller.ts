@@ -35,9 +35,9 @@ export class RegistrationController {
     return this.registrationService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.registrationService.findOne(+id);
+  @Get(':email')
+  findOne(@Param('id') email: string) {
+    return this.registrationService.findOne(email);
   }
 
   @Patch(':id')

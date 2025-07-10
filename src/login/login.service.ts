@@ -40,7 +40,7 @@ export class LoginService {
   }
 
   async logout(req:any, res:any){
-      const token = req.cookies('auth_token')
+      const token = req.cookies['auth_token']
 
       console.log(token)
       if(token){

@@ -73,8 +73,8 @@ export class RegistrationService {
     return this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} registration`;
+  findOne(email: string) {
+    return this.prisma.user.findFirst({where: { email}});
   }
 
   update(id: number, updateRegistrationDto: UpdateRegistrationDto) {

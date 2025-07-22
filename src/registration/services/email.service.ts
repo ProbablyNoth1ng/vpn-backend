@@ -29,8 +29,8 @@ export class EmailService {
     await this.transporter.sendMail(mailOptions);
   }
 
-  async sendResetPasswordEmail(to: string, token: string): Promise<void> {
-    const resetLink = `http://localhost:3000/reset-password?token=${token}`;
+  async sendResetPasswordEmail(to: string, token: string, tokenExpiry:Date): Promise<void> {
+    const resetLink = `http://localhost:5173/reset-password?token=${token}&expiry=${tokenExpiry}`;
 
     const mailOptions = {
       from: process.env.SMTP_FROM || process.env.SMTP_USER,

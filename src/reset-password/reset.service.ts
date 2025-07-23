@@ -28,7 +28,11 @@ export class ResetService {
       data: { resetToken: token, resetTokenExpiry: expiry },
     });
 
-    await this.emailService.sendResetPasswordEmail(dto.email, token);
+    await this.emailService.sendResetPasswordEmail(
+      dto.email,
+      token,
+      dto.frontendUrl || process.env.FRONTEND_URL!,
+    );
 
     console.log(`Reset token: ${token}`);
     return { message: 'Reset token sent' };

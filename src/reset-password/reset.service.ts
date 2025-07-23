@@ -28,11 +28,14 @@ export class ResetService {
       data: { resetToken: token, resetTokenExpiry: expiry },
     });
 
-    await this.emailService.sendResetPasswordEmail(dto.email, token, expiry);
+    await this.emailService.sendResetPasswordEmail(
+      dto.email,
+      token,
+      dto.frontendUrl || process.env.FRONTEND_URL!,
+    );
 
     console.log(`Reset token: ${token}`);
-    console.log(`Token expiry: ${expiry}`);
-    return { message: 'Reset token sent' , token: token, tokenExpiry:expiry};
+    return { message: 'Reset token sent' };
   }
 
   async resetPassword(dto: ResetPasswordDto) {

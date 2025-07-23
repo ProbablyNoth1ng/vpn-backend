@@ -12,7 +12,7 @@ export class RegistrationService {
     private readonly verificationService: VerificationService,
   ) {}
 
-  async create(data: Prisma.UserCreateInput): Promise<User | null> {
+  async create(data: Prisma.UserCreateInput): Promise<User | string> {
     if (typeof data.createdAt === 'string') {
       data.createdAt = new Date(data.createdAt);
     }
@@ -23,7 +23,7 @@ export class RegistrationService {
 
     if (existingUser) {
       console.log('DUPLICATE');
-      return null;
+      return "User already exist";
     }
 
     const verificationCode =

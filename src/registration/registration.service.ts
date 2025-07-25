@@ -4,6 +4,7 @@ import { UpdateRegistrationDto } from './dto/update-registration.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { VerificationService } from 'src/registration/verification/verification.service';
 import { Prisma, User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class RegistrationService {
@@ -23,8 +24,10 @@ export class RegistrationService {
 
     if (existingUser) {
       console.log('DUPLICATE');
-      return "User already exist";
+      return 'User already exist';
     }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
 
     const verificationCode =
       await this.verificationService.sendVerificationCode(data.email);
@@ -32,6 +35,7 @@ export class RegistrationService {
     const user = await this.prisma.user.create({
       data: {
         ...data,
+        password: hashedPassword,
         verificationCode,
         isVerified: false,
       },
@@ -74,7 +78,7 @@ export class RegistrationService {
   }
 
   findOne(email: string) {
-    return this.prisma.user.findFirst({where: { email}});
+    return this.prisma.user.findFirst({ where: { email } });
   }
 
   update(id: number, updateRegistrationDto: UpdateRegistrationDto) {

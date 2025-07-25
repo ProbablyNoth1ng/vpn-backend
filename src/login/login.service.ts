@@ -4,6 +4,7 @@ import { UpdateLoginDto } from './dto/update-login.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { Response, Request } from 'express';
 import { WireGuardService } from 'src/wireguard/wireguard.service';
+import * as path from 'path';
 @Injectable()
 export class LoginService {
   constructor(
@@ -36,15 +37,15 @@ export class LoginService {
       maxAge: 1000 * 60 * 60 * 2,
     });
 
-    const existingClient = await this.prisma.wireGuardClient.findFirst({
+    let client = await this.prisma.wireGuardClient.findFirst({
       where: { userId: user.id },
     });
 
-    if (!existingClient) {
-      const keys = await this.wireguardService.generateKeyPair();
+    if (!client) {
+      const keys = this.wireguardService.generateKeyPair();
       const ipAddress = `10.0.0.${user.id + 1}`;
 
-      await this.prisma.wireGuardClient.create({
+      client = await this.prisma.wireGuardClient.create({
         data: {
           userId: user.id,
           privateKey: keys.privateKey,
@@ -58,7 +59,28 @@ export class LoginService {
       console.log(`WireGuard client already exists for user ${user.email}`);
     }
 
-    return { message: 'Logged in' };
+    const serverPublicKey = this.wireguardService.getServerPublicKey();
+    const endpoint = '<your-vpn-server-ip-or-domain>:51820';
+
+    const config = this.wireguardService.generateClientConfig({
+      privateKey: client.privateKey,
+      address: `${client.ipAddress}/32`,
+      serverPublicKey,
+      endpoint,
+      dns: '1.1.1.1',
+    });
+
+    const configsDir = path.join(process.cwd(), 'configs');
+    const fs = require('fs');
+    if (!fs.existsSync(configsDir)) {
+      fs.mkdirSync(configsDir);
+    }
+    const filePath = path.join(configsDir, `client-${user.id}.conf`);
+    fs.writeFileSync(filePath, config);
+
+    console.log(`WireGuard config saved to ${filePath}`);
+
+    return { message: 'Logged in', configPath: filePath };
   }
 
   async logout(req: Request, res: Response) {

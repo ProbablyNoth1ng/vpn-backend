@@ -33,6 +33,7 @@
     "bcrypt": "^6.0.0",
     "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
+    "dayjs": "^1.11.13",
     "dotenv": "^17.0.1",
     "libsodium-wrappers": "^0.7.15",
     "nodemailer": "^7.0.4",

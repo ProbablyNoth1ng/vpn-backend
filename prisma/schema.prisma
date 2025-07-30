@@ -25,6 +25,7 @@ model User {
   resetTokenExpiry DateTime?
 
   wireGuardClients WireGuardClient[]
+  userSessions UserSession[]
 }
 
 model WireGuardClient {
@@ -36,3 +37,16 @@ model WireGuardClient {
   ipAddress  String
   createdAt  DateTime @default(now())
 }
+
+model UserSession {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  token       String   @unique
+  ipAddress   String
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  isActive    Boolean  @default(true)
+}
+

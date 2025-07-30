@@ -4,15 +4,19 @@ import { UpdateLoginDto } from './dto/update-login.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { Response, Request } from 'express';
 import { WireGuardService } from 'src/wireguard/wireguard.service';
+import { SessionService } from 'src/session/session.service';
 import * as path from 'path';
+import * as fs from 'fs';
+
 @Injectable()
 export class LoginService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly wireguardService: WireGuardService,
+    private readonly sessionService: SessionService,
   ) {}
 
-  async login(res: Response, createLoginDto: CreateLoginDto) {
+  async login(req: Request, res: Response, createLoginDto: CreateLoginDto) {
     const user = await this.prisma.user.findFirst({
       where: { email: createLoginDto.email },
     });
@@ -36,6 +40,8 @@ export class LoginService {
       sameSite: 'strict',
       maxAge: 1000 * 60 * 60 * 2,
     });
+
+    await this.sessionService.createSession(user.id, token, req);
 
     let client = await this.prisma.wireGuardClient.findFirst({
       where: { userId: user.id },
@@ -71,10 +77,10 @@ export class LoginService {
     });
 
     const configsDir = path.join(process.cwd(), 'configs');
-    const fs = require('fs');
     if (!fs.existsSync(configsDir)) {
       fs.mkdirSync(configsDir);
     }
+
     const filePath = path.join(configsDir, `client-${user.id}.conf`);
     fs.writeFileSync(filePath, config);
 
@@ -87,6 +93,8 @@ export class LoginService {
     const token = req.cookies['auth_token'];
 
     if (token) {
+      await this.sessionService.deactivateSession(token);
+
       res.clearCookie('auth_token', {
         httpOnly: true,
         secure: false,

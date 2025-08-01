@@ -7,6 +7,7 @@ import { WireGuardService } from 'src/wireguard/wireguard.service';
 import { SessionService } from 'src/session/session.service';
 import * as path from 'path';
 import * as fs from 'fs';
+import axios from 'axios';
 
 @Injectable()
 export class LoginService {
@@ -16,7 +17,8 @@ export class LoginService {
     private readonly sessionService: SessionService,
   ) {}
 
-  async login(req: Request, res: Response, createLoginDto: CreateLoginDto) {
+  async login(req: Request, res: Response, createLoginDto: CreateLoginDto, ip:string) {
+    const country = await this.lookUpCountry(ip)
     const user = await this.prisma.user.findFirst({
       where: { email: createLoginDto.email },
     });
@@ -56,7 +58,8 @@ export class LoginService {
           userId: user.id,
           privateKey: keys.privateKey,
           publicKey: keys.publicKey,
-          ipAddress,
+          ipAddress:ip,
+          country:country,
         },
       });
 
@@ -85,6 +88,7 @@ export class LoginService {
     fs.writeFileSync(filePath, config);
 
     console.log(`WireGuard config saved to ${filePath}`);
+    console.log(`user's ip ${ip}`)
 
     return { message: 'Logged in', configPath: filePath };
   }
@@ -101,9 +105,25 @@ export class LoginService {
         sameSite: 'strict',
       });
 
+      console.log('logged out')
       return { message: 'Logged out' };
     }
 
     return { message: 'No auth token found' };
+  }
+
+
+
+  async lookUpCountry(ip:string):Promise<string>{
+
+
+    try{
+      const res = await axios.get(`http://ip-api.com/json/${ip}`);
+      return res.data?.country || 'Unknown'
+
+    } catch {
+
+      return 'Unknown';
+    }
   }
 }

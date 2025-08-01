@@ -12,6 +12,7 @@ import {
 import { LoginService } from './login.service';
 import { CreateLoginDto, LoginConfigPath } from './dto/create-login.dto';
 import { ApiOperation, ApiCreatedResponse } from '@nestjs/swagger';
+import { UserIp } from 'src/clientIP/user-ip.decorator';
 
 @Controller('login')
 export class LoginController {
@@ -23,12 +24,13 @@ export class LoginController {
     type: LoginConfigPath,
   })
   @Post('')
-  login(
+  async login(
+    @UserIp() ip:string,
     @Req() req,
     @Res({ passthrough: true }) res,
     @Body() createLoginDto: CreateLoginDto,
   ) {
-    return this.loginService.login(req, res, createLoginDto);
+    return this.loginService.login(req, res, createLoginDto, ip);
   }
 
   @ApiOperation({ summary: 'Logout user' })

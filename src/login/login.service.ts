@@ -8,6 +8,7 @@ import { SessionService } from 'src/session/session.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
+import { escape } from 'querystring';
 
 @Injectable()
 export class LoginService {
@@ -33,7 +34,7 @@ export class LoginService {
       return { message: 'User not verified' };
     }
 
-    const tokenPayload = `${user.id},${user.email},${user.password}`;
+    const tokenPayload = `${user.id},${user.email},${user.password},${Date.now()}`;
     const token = Buffer.from(tokenPayload).toString('base64');
 
     res.cookie('auth_token', token, {
@@ -43,15 +44,19 @@ export class LoginService {
       maxAge: 1000 * 60 * 60 * 2,
     });
 
-    await this.sessionService.createSession(user.id, token, req);
+    const exist = await this.prisma.userSession.findUnique({where:{token}})
+    if(!exist){
+      await this.sessionService.createSession(user.id, token, req);
+    }
 
     let client = await this.prisma.wireGuardClient.findFirst({
       where: { userId: user.id },
     });
 
+
+
     if (!client) {
       const keys = this.wireguardService.generateKeyPair();
-      const ipAddress = `10.0.0.${user.id + 1}`;
 
       client = await this.prisma.wireGuardClient.create({
         data: {
@@ -84,8 +89,12 @@ export class LoginService {
       fs.mkdirSync(configsDir);
     }
 
+
     const filePath = path.join(configsDir, `client-${user.id}.conf`);
     fs.writeFileSync(filePath, config);
+   
+  
+    
 
     console.log(`WireGuard config saved to ${filePath}`);
     console.log(`user's ip ${ip}`)

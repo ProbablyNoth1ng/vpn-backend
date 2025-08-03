@@ -8,7 +8,6 @@ import { SessionService } from 'src/session/session.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
-import { escape } from 'querystring';
 
 @Injectable()
 export class LoginService {
@@ -135,4 +134,64 @@ export class LoginService {
       return 'Unknown';
     }
   }
+
+
+  async userConfig(id:number){
+    const configsDir = path.join(process.cwd(), 'configs');
+
+    if (!id) return 'id wasn’t found';
+    
+      const result: Record<string, string> = {};
+      const filePath = path.join(configsDir, `client-${id}.conf`)
+      const config = fs.readFileSync(path.resolve(filePath), { encoding: 'utf8', flag: 'r' })
+
+
+      const lines = config.split('\n');
+
+      for(const line of lines){
+        const trimmed  = line.trim()
+        if(!trimmed || trimmed.startsWith('[')) continue
+
+        const [keyRaw, ...rest] = trimmed.split('=')
+        const key = keyRaw.trim().toLowerCase().replace(/[-_]/g, '')
+        const value = rest.join('=').trim()
+
+        switch(key) {
+          case 'privatekey':
+          result.privateKey = value
+          break
+
+          case 'address':
+          result.address = value
+          break
+
+          case 'dns':
+          result.dns = value
+          break
+
+          case 'publickey':
+          result.publicKey = value
+          break
+        
+          case 'endpoint':
+          result.endpoint = value
+          break
+
+          case 'allowedips':
+          result.allowedIPs = value
+          break
+
+          case 'persistentkeepalive':
+          result.persistentKeepalive = value
+          break
+        }
+
+      }
+
+
+      return result
+
+  }
+
+
 }

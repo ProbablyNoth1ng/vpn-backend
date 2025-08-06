@@ -8,7 +8,6 @@ import { SessionService } from 'src/session/session.service';
 import * as path from 'path';
 import * as fs from 'fs';
 import axios from 'axios';
-import { escape } from 'querystring';
 
 @Injectable()
 export class LoginService {

@@ -35,7 +35,7 @@ model WireGuardClient {
   privateKey String
   publicKey  String
   ipAddress  String
-  country    String
+  country    String?
   createdAt  DateTime @default(now())
 }
 

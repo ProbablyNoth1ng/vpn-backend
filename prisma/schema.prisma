@@ -28,6 +28,7 @@ model User {
   userSessions UserSession[]
 }
 
+
 model WireGuardClient {
   id         Int      @id @default(autoincrement())
   user       User     @relation(fields: [userId], references: [id])
@@ -40,14 +41,24 @@ model WireGuardClient {
 }
 
 model UserSession {
-  id          Int      @id @default(autoincrement())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  token       String   @unique
-  ipAddress   String
-  userAgent   String?
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime
-  isActive    Boolean  @default(true)
+  id                   Int      @id @default(autoincrement())
+  user                 User     @relation(fields: [userId], references: [id])
+  userId               Int
+  token                String   @unique
+  ipAddress            String
+  userAgent            String?
+  createdAt            DateTime @default(now())
+  expiresAt            DateTime
+  oneTimeConfiguration String?
+  isActive             Boolean  @default(true)
+}
+
+
+model ServersList {
+  id                   Int      @id @default(autoincrement())
+  ip                   String
+  port                 String
+  username             String?
+  password             String?
 }
 

@@ -53,3 +53,12 @@ model UserSession {
   isActive             Boolean  @default(true)
 }
 
+
+model ServersList {
+  id                   Int      @id @default(autoincrement())
+  ip                   String
+  port                 String
+  username             String?
+  password             String?
+}
+

@@ -6,8 +6,9 @@ import { VpnConnectionModule } from './vpn-connection/vpn-connection.module';
 import { ResetModule } from 'src/reset-password/reset.module';
 import { LoginModule } from './login/login.module';
 import { SessionModule } from './session/session.module';
+import { AvailableServersModule } from './availableServers/availableServers.module';
 @Module({
-  imports: [RegistrationModule, LoginModule, VpnConnectionModule, ResetModule,SessionModule ],
+  imports: [RegistrationModule, LoginModule, VpnConnectionModule, ResetModule,SessionModule, AvailableServersModule ],
   controllers: [AppController],
   providers: [AppService],
 })

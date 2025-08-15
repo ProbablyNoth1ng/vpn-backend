@@ -17,8 +17,13 @@ export class LoginService {
     private readonly sessionService: SessionService,
   ) {}
 
-  async login(req: Request, res: Response, createLoginDto: CreateLoginDto, ip:string) {
-    const country = await this.lookUpCountry(ip)
+  async login(
+    req: Request,
+    res: Response,
+    createLoginDto: CreateLoginDto,
+    ip: string,
+  ) {
+    const country = await this.lookUpCountry(ip);
     const user = await this.prisma.user.findFirst({
       where: { email: createLoginDto.email },
     });
@@ -43,16 +48,16 @@ export class LoginService {
       maxAge: 1000 * 60 * 60 * 2,
     });
 
-    const exist = await this.prisma.userSession.findUnique({where:{token}})
-    if(!exist){
+    const exist = await this.prisma.userSession.findUnique({
+      where: { token },
+    });
+    if (!exist) {
       await this.sessionService.createSession(user.id, token, req);
     }
 
     let client = await this.prisma.wireGuardClient.findFirst({
       where: { userId: user.id },
     });
-
-
 
     if (!client) {
       const keys = this.wireguardService.generateKeyPair();
@@ -62,8 +67,8 @@ export class LoginService {
           userId: user.id,
           privateKey: keys.privateKey,
           publicKey: keys.publicKey,
-          ipAddress:ip,
-          country:country,
+          ipAddress: ip,
+          country: country,
         },
       });
 
@@ -88,17 +93,13 @@ export class LoginService {
       fs.mkdirSync(configsDir);
     }
 
-
     const filePath = path.join(configsDir, `client-${user.id}.conf`);
     fs.writeFileSync(filePath, config);
-   
-  
-    
 
     console.log(`WireGuard config saved to ${filePath}`);
-    console.log(`user's ip ${ip}`)
+    console.log(`user's ip ${ip}`);
 
-    return { message: 'Logged in', configPath: filePath };
+    return { message: 'Logged in', configUrl: '/login/config' };
   }
 
   async logout(req: Request, res: Response) {
@@ -107,30 +108,46 @@ export class LoginService {
     if (token) {
       await this.sessionService.deactivateSession(token);
 
+      const decoded = Buffer.from(token, 'base64').toString('ascii');
+      const [userIdStr] = decoded.split(',');
+      const userId = parseInt(userIdStr, 10);
+
+      if (isNaN(userId)) {
+        return { message: 'Invalid token' };
+      }
+
+      await this.prisma.userSession.deleteMany({
+        where: { token },
+      });
+
+      const filePath = path.join(
+        process.cwd(),
+        'configs',
+        `client-${userId}.conf`,
+      );
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        console.log(`WireGuard config deleted for user ${userId}`);
+      }
+
       res.clearCookie('auth_token', {
         httpOnly: true,
         secure: false,
         sameSite: 'strict',
       });
 
-      console.log('logged out')
+      console.log('logged out');
       return { message: 'Logged out' };
     }
 
     return { message: 'No auth token found' };
   }
 
-
-
-  async lookUpCountry(ip:string):Promise<string>{
-
-
-    try{
+  async lookUpCountry(ip: string): Promise<string> {
+    try {
       const res = await axios.get(`http://ip-api.com/json/${ip}`);
-      return res.data?.country || 'Unknown'
-
+      return res.data?.country || 'Unknown';
     } catch {
-
       return 'Unknown';
     }
   }

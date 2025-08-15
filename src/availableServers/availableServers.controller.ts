@@ -28,7 +28,7 @@ export class AvailableServersController {
   @ApiOperation({summary:"Get all servers"})
   @Get()
   findAll() {
-    return this.availableServersService.geAllServers();
+    return this.availableServersService.getAllServers();
   }
 
   @ApiOperation({summary:"Find server from db by ip"})

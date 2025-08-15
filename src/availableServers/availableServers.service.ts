@@ -28,7 +28,7 @@ export class AvailableServersService {
   
       return "Server added"
     }
-    async geAllServers() {
+    async getAllServers() {
       return this.prisma.serversList.findMany();
     }
     async getCertainServer(ip: string) {

@@ -15,7 +15,7 @@ export class AuthGuard implements CanActivate {
     const token = req.cookies?.['auth_token'];
     if (!token) throw new UnauthorizedException();
 
-    const session = await this.prisma.userSession.findUnique({
+    const session = await this.prisma.client.userSession.findUnique({
       where: { token },
       include: { user: true },
     });

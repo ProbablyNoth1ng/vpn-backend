@@ -14,7 +14,7 @@ export class ResetService {
   ) {}
 
   async requestPasswordReset(dto: RequestResetDto) {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.client.user.findUnique({
       where: { email: dto.email },
     });
 
@@ -23,7 +23,7 @@ export class ResetService {
     const token = uuidv4();
     const expiry = new Date(Date.now() + 15 * 60 * 1000);
 
-    await this.prisma.user.update({
+    await this.prisma.client.user.update({
       where: { email: dto.email },
       data: { resetToken: token, resetTokenExpiry: expiry },
     });
@@ -39,7 +39,7 @@ export class ResetService {
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.client.user.findFirst({
       where: {
         resetToken: dto.token,
         resetTokenExpiry: { gt: new Date() },
@@ -50,7 +50,7 @@ export class ResetService {
 
     const hashed = await bcrypt.hash(dto.newPassword, 10);
 
-    await this.prisma.user.update({
+    await this.prisma.client.user.update({
       where: { id: user.id },
       data: {
         password: hashed,

@@ -10,12 +10,12 @@ export class AvailableServersService {
   ) {}
 
     async addServer(data: Prisma.ServersListCreateInput){
-        const existingServer = await this.prisma.serversList.findFirst({
+        const existingServer = await this.prisma.client.serversList.findFirst({
           where: { ip: data.ip },
         });
 
         if(!existingServer){
-          const server = await this.prisma.serversList.create({
+          const server = await this.prisma.client.serversList.create({
             data: {
               ...data,
             },
@@ -29,10 +29,10 @@ export class AvailableServersService {
       return "Server added"
     }
     async getAllServers() {
-      return this.prisma.serversList.findMany();
+      return this.prisma.client.serversList.findMany();
     }
     async getCertainServer(ip: string) {
-      return this.prisma.serversList.findFirst({ where: { ip } });
+      return this.prisma.client.serversList.findFirst({ where: { ip } });
     }
 
 }

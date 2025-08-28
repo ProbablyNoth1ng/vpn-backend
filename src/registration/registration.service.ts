@@ -18,7 +18,7 @@ export class RegistrationService {
       data.createdAt = new Date(data.createdAt);
     }
 
-    const existingUser = await this.prisma.user.findFirst({
+    const existingUser = await this.prisma.client.user.findFirst({
       where: { email: data.email },
     });
 
@@ -32,7 +32,7 @@ export class RegistrationService {
     const verificationCode =
       await this.verificationService.sendVerificationCode(data.email);
 
-    const user = await this.prisma.user.create({
+    const user = await this.prisma.client.user.create({
       data: {
         ...data,
         password: hashedPassword,
@@ -48,7 +48,7 @@ export class RegistrationService {
   }
 
   async verifyEmail(email: string, code: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
+    const user = await this.prisma.client.user.findUnique({
       where: { email },
     });
 
@@ -64,7 +64,7 @@ export class RegistrationService {
       throw new Error('Invalid verification code');
     }
 
-    return this.prisma.user.update({
+    return this.prisma.client.user.update({
       where: { email },
       data: {
         isVerified: true,
@@ -74,11 +74,11 @@ export class RegistrationService {
   }
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.client.user.findMany();
   }
 
   findOne(email: string) {
-    return this.prisma.user.findFirst({ where: { email } });
+    return this.prisma.client.user.findFirst({ where: { email } });
   }
 
   update(id: number, updateRegistrationDto: UpdateRegistrationDto) {

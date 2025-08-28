@@ -24,7 +24,7 @@ export class LoginService {
     ip: string,
   ) {
     const country = await this.lookUpCountry(ip);
-    const user = await this.prisma.user.findFirst({
+    const user = await this.prisma.client.user.findFirst({
       where: { email: createLoginDto.email },
     });
 
@@ -48,21 +48,21 @@ export class LoginService {
       maxAge: 1000 * 60 * 60 * 2,
     });
 
-    const exist = await this.prisma.userSession.findUnique({
+    const exist = await this.prisma.client.userSession.findUnique({
       where: { token },
     });
     if (!exist) {
       await this.sessionService.createSession(user.id, token, req);
     }
 
-    let client = await this.prisma.wireGuardClient.findFirst({
+    let client = await this.prisma.client.wireGuardClient.findFirst({
       where: { userId: user.id },
     });
 
     if (!client) {
       const keys = this.wireguardService.generateKeyPair();
 
-      client = await this.prisma.wireGuardClient.create({
+      client = await this.prisma.client.wireGuardClient.create({
         data: {
           userId: user.id,
           privateKey: keys.privateKey,
@@ -116,7 +116,7 @@ export class LoginService {
         return { message: 'Invalid token' };
       }
 
-      await this.prisma.userSession.deleteMany({
+      await this.prisma.client.userSession.deleteMany({
         where: { token },
       });
 

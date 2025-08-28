@@ -10,7 +10,7 @@ export class SessionService {
   constructor(private readonly prisma: PrismaService) {}
 
   async createSession(userId: number, token: string, req: Request) {
-     return this.prisma.userSession.create({
+     return this.prisma.client.userSession.create({
       data: {
         userId,
         token,
@@ -23,14 +23,14 @@ export class SessionService {
   }
 
   async deactivateSession(token: string) {
-    return this.prisma.userSession.updateMany({
+    return this.prisma.client.userSession.updateMany({
       where: { token, isActive: true },
       data: { isActive: false },
     });
   }
 
   async getActiveSessions(userId: number) {
-    return this.prisma.userSession.findMany({
+    return this.prisma.client.userSession.findMany({
       where: {
         userId,
         isActive: true,
@@ -40,7 +40,7 @@ export class SessionService {
   }
 
   async cleanExpiredSessions() {
-    return this.prisma.userSession.deleteMany({
+    return this.prisma.client.userSession.deleteMany({
       where: {
         OR: [{ isActive: false }, { expiresAt: { lt: new Date() } }],
       },
@@ -61,7 +61,7 @@ export class SessionService {
     
 
      
-    return this.prisma.userSession.update({
+    return this.prisma.client.userSession.update({
       where: {
         token: req.cookies["auth_token"]
       },

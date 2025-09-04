@@ -1,19 +1,39 @@
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AddServerDto {
-  @ApiProperty({description:"ip", required:true})
+  @ApiProperty({ description: 'ip', required: true })
   @IsNotEmpty()
+  @IsString()
   ip: string;
 
-  @ApiProperty({description:"port", required:true})
+  @ApiProperty({ description: 'port', required: true })
   @IsNotEmpty()
   @IsString()
   port: string;
 
+  @ApiProperty({ description: 'publicKey', required: true })
+  @IsNotEmpty()
+  @IsString()
+  publicKey: string;
+
+  @ApiProperty({ description: 'subnet', required: true })
+  @IsNotEmpty()
+  @IsString()
+  subnet: string;
+
+  @ApiProperty({ description: 'country', required: false })
   @IsOptional()
-  username:string
-  
+  @IsString()
+  country?: string;
+
+  @ApiProperty({ description: 'username', required: false })
   @IsOptional()
-  password:string
+  @IsString()
+  username?: string;
+
+  @ApiProperty({ description: 'password', required: false })
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

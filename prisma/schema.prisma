@@ -5,60 +5,60 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
-  email            String   @unique
-  password         String
-  createdAt        DateTime @default(now())
-  verificationCode String?
-  isVerified       Boolean  @default(false)
+    id               Int      @id @default(autoincrement())
+    email            String   @unique
+    password         String
+    createdAt        DateTime @default(now())
+    verificationCode String?
+    isVerified       Boolean  @default(false)
 
-  resetToken       String?
-  resetTokenExpiry DateTime?
+    resetToken       String?
+    resetTokenExpiry DateTime?
 
-  wireGuardClients WireGuardClient[]
-  userSessions UserSession[]
+    wireGuardClients WireGuardClient[]
+    userSessions     UserSession[]
 }
 
-
 model WireGuardClient {
-  id         Int      @id @default(autoincrement())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  privateKey String
-  publicKey  String
-  ipAddress  String
-  country    String?
-  createdAt  DateTime @default(now())
+    id         Int      @id @default(autoincrement())
+    user       User     @relation(fields: [userId], references: [id])
+    userId     Int
+    privateKey String
+    publicKey  String
+    ipAddress  String
+    country    String?
+    createdAt  DateTime @default(now())
 }
 
 model UserSession {
-  id                   Int      @id @default(autoincrement())
-  user                 User     @relation(fields: [userId], references: [id])
-  userId               Int
-  token                String   @unique
-  ipAddress            String
-  userAgent            String?
-  createdAt            DateTime @default(now())
-  expiresAt            DateTime
-  oneTimeConfiguration String?
-  isActive             Boolean  @default(true)
+    id                   Int      @id @default(autoincrement())
+    user                 User     @relation(fields: [userId], references: [id])
+    userId               Int
+    token                String   @unique
+    ipAddress            String
+    userAgent            String?
+    createdAt            DateTime @default(now())
+    expiresAt            DateTime
+    oneTimeConfiguration String?
+    isActive             Boolean  @default(true)
 }
-
 
 model ServersList {
-  id                   Int      @id @default(autoincrement())
-  ip                   String
-  port                 String
-  username             String?
-  password             String?
+    id        Int     @id @default(autoincrement())
+    ip        String
+    port      String
+    publicKey String
+    subnet    String
+    country   String?
+    username  String?
+    password  String?
 }
-

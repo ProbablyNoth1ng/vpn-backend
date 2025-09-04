@@ -55,6 +55,16 @@ export class LoginService {
       await this.sessionService.createSession(user.id, token, req);
     }
 
+    let server = await this.prisma.client.serversList.findFirst({
+      where: { country: country },
+    });
+    if (!server) {
+      server = await this.prisma.client.serversList.findFirst();
+    }
+    if (!server) {
+      return { message: 'No available servers' };
+    }
+
     let client = await this.prisma.client.wireGuardClient.findFirst({
       where: { userId: user.id },
     });
@@ -62,36 +72,39 @@ export class LoginService {
     if (!client) {
       const keys = this.wireguardService.generateKeyPair();
 
+      // Найдём последний IP на этом сервере
+      const lastClient = await this.prisma.client.wireGuardClient.findFirst({
+        where: {},
+        orderBy: { id: 'desc' },
+      });
+
+      const baseSubnet = '10.8.0.0'; // можно вынести в ServersList
+      const offset = lastClient ? lastClient.id + 2 : 2; // 10.8.0.2 первый клиент
+      const vpnIp = this.nextIp(baseSubnet, offset);
+
       client = await this.prisma.client.wireGuardClient.create({
         data: {
           userId: user.id,
           privateKey: keys.privateKey,
           publicKey: keys.publicKey,
-          ipAddress: ip,
+          ipAddress: vpnIp,
           country: country,
         },
       });
 
       console.log(`WireGuard client created for user ${user.email}`);
-    } else {
-      console.log(`WireGuard client already exists for user ${user.email}`);
     }
-
-    const serverPublicKey = this.wireguardService.getServerPublicKey();
-    const endpoint = '<your-vpn-server-ip-or-domain>:51820';
 
     const config = this.wireguardService.generateClientConfig({
       privateKey: client.privateKey,
       address: `${client.ipAddress}/32`,
-      serverPublicKey,
-      endpoint,
+      serverPublicKey: server.publicKey, // должен быть в ServersList
+      endpoint: `${server.ip}:${server.port}`,
       dns: '1.1.1.1',
     });
 
     const configsDir = path.join(process.cwd(), 'configs');
-    if (!fs.existsSync(configsDir)) {
-      fs.mkdirSync(configsDir);
-    }
+    if (!fs.existsSync(configsDir)) fs.mkdirSync(configsDir);
 
     const filePath = path.join(configsDir, `client-${user.id}.conf`);
     fs.writeFileSync(filePath, config);
@@ -100,6 +113,12 @@ export class LoginService {
     console.log(`user's ip ${ip}`);
 
     return { message: 'Logged in', configUrl: '/login/config' };
+  }
+
+  private nextIp(base: string, offset: number): string {
+    const parts = base.split('.').map(Number);
+    parts[3] += offset;
+    return parts.join('.');
   }
 
   async logout(req: Request, res: Response) {

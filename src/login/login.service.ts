@@ -72,14 +72,13 @@ export class LoginService {
     if (!client) {
       const keys = this.wireguardService.generateKeyPair();
 
-      // Найдём последний IP на этом сервере
       const lastClient = await this.prisma.client.wireGuardClient.findFirst({
         where: {},
         orderBy: { id: 'desc' },
       });
 
-      const baseSubnet = '10.8.0.0'; // можно вынести в ServersList
-      const offset = lastClient ? lastClient.id + 2 : 2; // 10.8.0.2 первый клиент
+      const baseSubnet = '10.8.0.0';
+      const offset = lastClient ? lastClient.id + 2 : 2;
       const vpnIp = this.nextIp(baseSubnet, offset);
 
       client = await this.prisma.client.wireGuardClient.create({
@@ -98,7 +97,7 @@ export class LoginService {
     const config = this.wireguardService.generateClientConfig({
       privateKey: client.privateKey,
       address: `${client.ipAddress}/32`,
-      serverPublicKey: server.publicKey, // должен быть в ServersList
+      serverPublicKey: server.publicKey,
       endpoint: `${server.ip}:${server.port}`,
       dns: '1.1.1.1',
     });
